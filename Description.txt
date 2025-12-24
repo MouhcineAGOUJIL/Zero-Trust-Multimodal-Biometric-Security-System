@@ -1,0 +1,203 @@
+Description globale du projet
+Titre proposé
+
+Système de sécurité biométrique multimodal résistant aux attaques basé sur Zero Trust et la protection révocable des templates biométriques
+
+1️⃣ Contexte et problématique
+
+Les systèmes biométriques classiques reposent sur le stockage de templates biométriques bruts ou faiblement protégés (empreintes digitales, visages).
+Cependant, ces systèmes présentent plusieurs limites critiques :
+
+❌ Impossibilité de révoquer une biométrie compromise
+
+❌ Sensibilité aux attaques de spoofing et de replay
+
+❌ Dépendance excessive à un seul facteur d’authentification
+
+❌ Incompatibilité avec le modèle Zero Trust moderne
+
+Dans un contexte de menaces avancées (vol de base de données biométriques, deepfakes, attaques internes), il devient indispensable de concevoir des systèmes biométriques sécurisés, adaptatifs, révocables et résistants aux attaques.
+
+2️⃣ Objectif général du projet
+
+L’objectif de ce projet est de concevoir et implémenter un système de sécurité biométrique multimodal combinant :
+
+Deux modalités biométriques :
+
+Visage
+
+Empreinte digitale
+
+Des mécanismes cryptographiques avancés de protection des templates biométriques, incluant :
+
+Fuzzy Vault (empreinte)
+
+Biométrie révocable (Cancelable Biometrics / BioHashing)
+
+Secure Sketch / Fuzzy Extractor
+
+Une architecture inspirée du modèle Zero Trust, intégrant :
+
+Une évaluation contextuelle dynamique
+
+Une authentification continue
+
+Une prise de décision adaptative basée sur le risque
+
+3️⃣ Architecture globale du système
+3.1 Vue d’ensemble
+
+Le système repose sur une architecture modulaire Zero Trust, où aucune entité (utilisateur, appareil, réseau) n’est considérée comme fiable par défaut.
+
+Les composants principaux sont :
+
+Module d’acquisition biométrique
+
+Module de protection des templates
+
+Module de fusion biométrique multimodale
+
+Moteur de contexte Zero Trust
+
+Moteur de décision et d’accès
+
+Module de journalisation et de révocation
+
+4️⃣ Gestion des biométries
+🔹 4.1 Visage (Cancelable Biometrics)
+
+Extraction de caractéristiques faciales (embeddings)
+
+Transformation non-inversible via projection aléatoire
+
+Génération d’un template révocable
+
+✔️ Avantages :
+
+Révocation possible en cas de fuite
+
+Protection contre l’inversion du template
+
+🔹 4.2 Empreinte digitale (Fuzzy Vault)
+
+Utilisation des minuties de l’empreinte
+
+Encodage dans un polynôme secret
+
+Ajout de points leurres (chaff points)
+
+✔️ Avantages :
+
+Forte tolérance au bruit
+
+Sécurité informationnelle élevée
+
+5️⃣ Protection cryptographique des templates
+
+Le projet combine plusieurs mécanismes :
+
+Fuzzy Vault → protection de l’empreinte
+
+Secure Sketch / Fuzzy Extractor → correction d’erreurs
+
+Hash cryptographique + Salt → stockage sécurisé
+
+Biométrie révocable → gestion des compromissions
+
+👉 Aucun template biométrique brut n’est stocké.
+
+6️⃣ Fusion biométrique multimodale
+
+La fusion est réalisée au niveau score :
+
+BiometricScore = w1·Score_visage + w2·Score_empreinte
+
+
+Tolérance accrue au bruit
+
+Résistance au spoofing d’une seule modalité
+
+Amélioration du FAR / FRR
+
+7️⃣ Intégration du modèle Zero Trust
+7.1 Principe fondamental
+
+« Ne jamais faire confiance, toujours vérifier »
+
+Même après une biométrie valide, l’accès dépend du contexte.
+
+7.2 Contexte évalué
+
+Appareil (device fingerprint)
+
+Localisation approximative
+
+Temps et fréquence
+
+Comportement utilisateur
+
+Historique de session
+
+Chaque facteur produit un score de confiance.
+
+7.3 Décision adaptative
+GlobalTrustScore = α·BiometricScore + β·ContextScore
+
+Score	Décision
+Élevé	Accès complet
+Moyen	Accès limité / re-auth
+Faible	Refus + alerte
+8️⃣ Résistance aux attaques
+Attaque	Mécanisme de défense
+Spoofing	Multimodalité
+Replay	Contexte dynamique
+Vol de templates	Templates protégés
+Brute force	Limitation + logs
+Attaque interne	Zero Trust
+Deepfake visage	Empreinte + contexte
+9️⃣ Caractère innovant du projet
+
+✔️ Combinaison biométrie + Zero Trust
+✔️ Biométrie révocable
+✔️ Multimodalité
+✔️ Résistance aux attaques modernes
+✔️ Conforme privacy by design
+
+🔚 Conclusion projet
+
+Ce projet propose une approche complète et moderne de la sécurité biométrique en intégrant des mécanismes cryptographiques robustes, une architecture Zero Trust et une authentification multimodale. Il répond aux limites fondamentales des systèmes biométriques traditionnels en offrant révocabilité, adaptabilité et résistance aux attaques, tout en respectant les exigences de confidentialité.
+
+📚 Références académiques (à citer dans le rapport)
+🔹 Biométrie & Template Protection
+
+A. Juels, M. Sudan, “A Fuzzy Vault Scheme”, IEEE ISIT, 2002
+
+A. Juels, M. Wattenberg, “A Fuzzy Commitment Scheme”, ACM CCS, 1999
+
+P. Tuyls et al., “Security with Noisy Data”, Springer, 2007
+
+N. Ratha et al., “Cancelable Biometrics”, IEEE Transactions on Pattern Analysis, 2007
+
+🔹 Secure Sketch & Fuzzy Extractors
+
+Y. Dodis et al., “Fuzzy Extractors”, SIAM Journal on Computing, 2008
+
+D. Boneh, “Secure Sketches for Biometric Authentication”, Crypto, 2004
+
+🔹 Multimodal Biometrics
+
+A. Ross, A. Jain, “Multimodal Biometrics: An Overview”, IEEE, 2003
+
+A. Jain et al., “An Introduction to Biometric Recognition”, IEEE, 2004
+
+🔹 Zero Trust
+
+NIST SP 800-207, “Zero Trust Architecture”, 2020
+
+Rose et al., “Zero Trust Architecture”, NIST
+
+🔹 Attaques biométriques
+
+R. Cappelli et al., “Fingerprint Spoofing Attacks”, IEEE
+
+Galbally et al., “Biometric Antispoofing”, Springer, 2014

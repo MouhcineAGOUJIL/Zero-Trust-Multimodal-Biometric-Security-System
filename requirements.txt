@@ -1,0 +1,10 @@
+numpy
+opencv-python
+face_recognition
+scipy
+scikit-learn
+fastapi
+uvicorn
+python-multipart
+sqlalchemy
+requests
