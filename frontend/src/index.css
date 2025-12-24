@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-dark: #0f172a;
+  --bg-card: #1e293b;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent-cyan: #06b6d4;
+  --accent-purple: #a855f7;
+  --border-color: #334155;
+  --success: #10b981;
+  --error: #ef4444;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* Navbar */
+.app-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.app-navbar .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: var(--accent-cyan);
+}
+
+.app-navbar nav a {
+  margin-left: 2rem;
+  text-decoration: none;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.app-navbar nav a:hover {
+  color: var(--accent-cyan);
+}
+
+/* Layout */
+.page-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  background-color: var(--bg-card);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* Form Elements */
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+input[type="text"] {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+input[type="text"]:focus {
+  border-color: var(--accent-cyan);
+}
+
+/* Webcam */
+.webcam-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  background: black;
+}
+
+.webcam-wrapper img, .webcam-wrapper video {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent-cyan);
+  color: black;
+  font-weight: bold;
+  padding: 1rem;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-primary:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--bg-dark);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.btn-secondary:hover {
+  background: #2d3748;
+  color: white;
+}
+
+/* File Upload */
+.file-upload {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-dark);
+  transition: border-color 0.2s;
+}
+
+.file-upload:hover {
+  border-color: var(--accent-purple);
+}
+
+.file-upload input {
+  display: none;
+}
+
+/* Status Message */
+.status-message {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.status-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.status-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Icons */
+.icon-cyan { color: var(--accent-cyan); }
+.icon-purple { color: var(--accent-purple); }
