@@ -163,9 +163,42 @@ Deepfake visage	Empreinte + contexte
 ✔️ Résistance aux attaques modernes
 ✔️ Conforme privacy by design
 
-🔚 Conclusion projet
+END Conclusion projet
 
 Ce projet propose une approche complète et moderne de la sécurité biométrique en intégrant des mécanismes cryptographiques robustes, une architecture Zero Trust et une authentification multimodale. Il répond aux limites fondamentales des systèmes biométriques traditionnels en offrant révocabilité, adaptabilité et résistance aux attaques, tout en respectant les exigences de confidentialité.
+
+---------------------------------------------------------------------------------------------------
+🛠️ AVANCEMENT TECHNIQUE & IMPLÉMENTATION (Mis à jour le 25 Décembre 2025)
+---------------------------------------------------------------------------------------------------
+
+📌 1. Implémentation du Fuzzy Vault (Inspiré par TIFS07)
+Nous avons implémenté une version robuste du schéma Fuzzy Vault pour la sécurisation des empreintes digitales, basée sur les travaux de Nandakumar, Jain et Pankanti (TIFS 2007).
+
+Caractéristiques Clés :
+- Encodage Spatial 2D : Projection des minuties (x, y) dans un espace unique U via la transformation `U = X || Y` (concaténation ou scaling: U = x*1000 + y). Cela permet de conserver la structure spatiale lors de l'encodage polynomial.
+- Polynôme Secret : Un polynôme de degré 8 (réduit à 4-6 pour les tests) est généré à partir du secret utilisateur.
+- CRC-16 : Intégration d'un contrôle de redondance cyclique (CRC) dans les coefficients du polynôme pour valider l'intégrité du secret décodé.
+- Chaff Points (Leurres) : Génération intelligente de 200+ points leurres qui respectent les contraintes spatiales mais ne se trouvent pas sur le polynôme secret, rendant l'attaque par force brute difficile.
+
+📌 2. Processus de Vérification & Alignement
+L'un des défis majeurs est l'alignement des empreintes "Query" avec les empreintes "Template" (Vault) sans révéler les points d'origine.
+
+Alignement Actuel :
+- Utilisation de détecteurs ORB (Oriented FAST and Rotated BRIEF) pour extraire des points clés invariants.
+- Estimation de transformation Affine (Rotation + Translation + Scale) via RANSAC (`cv2.estimateAffinePartial2D`).
+- Application de la transformation aux points de la requête avant tentative de déverrouillage du Vault.
+
+📌 3. État Actuel des Résultats
+- Enroll (Lock) : Fonctionnel. Les minuties sont correctement extraites et verrouillées dans le Vault avec des points leurres.
+- Verify (Unlock) : En cours de calibration.
+  - Le taux d'acceptation authentique (GAR) est actuellement bas (0%) sur la db "FVC_2002/DB2_B".
+  - Cause identifiée : La précision de l'alignement Affine sur des empreintes partielles ou bruitées reste insuffisante (< 10 inliers stables), ce qui empêche le déverrouillage du polynôme.
+  - Pistes d'amélioration : Intégration de minuties manuelles ou amélioration du pré-traitement (CLAHE déjà ajouté) et relaxation des seuils de tolérance.
+
+📌 4. Interface Utilisateur & Backend
+- Backend FastAPI : Routes `/enroll` et `/verify` opérationnelles, gérant l'upload de fichiers et la logique multimodale.
+- Frontend React : Interface moderne (Thème clair, Glassmorphism) permettant la capture ou l'upload de visages et d'empreintes.
+- Fusion : Logique "AND" stricte (Visage + Empreinte requis) implémentée pour une sécurité maximale.
 
 📚 Références académiques (à citer dans le rapport)
 🔹 Biométrie & Template Protection

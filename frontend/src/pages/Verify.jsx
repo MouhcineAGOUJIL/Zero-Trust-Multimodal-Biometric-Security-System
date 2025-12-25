@@ -11,10 +11,23 @@ const Verify = () => {
     const [result, setResult] = useState(null); // API Response
     const [loading, setLoading] = useState(false);
 
+    const [uploadMode, setUploadMode] = useState(false);
+
     const capture = useCallback(() => {
         const imageSrc = webcamRef.current.getScreenshot();
         setImgSrc(imageSrc);
     }, [webcamRef]);
+
+    const handleFaceFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setImgSrc(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const dataURLtoBlob = (dataurl) => {
         let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
@@ -64,26 +77,60 @@ const Verify = () => {
                     </div>
 
                     <div className="form-group">
-                        <label>Live Face Check</label>
+                        <div className="flex justify-between items-center mb-2">
+                            <label>Live Face Check</label>
+                            <button
+                                type="button"
+                                onClick={() => { setUploadMode(!uploadMode); setImgSrc(null); }}
+                                className="text-xs text-cyan-400 hover:text-cyan-300 underline bg-transparent border-none p-0 w-auto"
+                            >
+                                {uploadMode ? "Switch to Webcam" : "Switch to Upload"}
+                            </button>
+                        </div>
+
                         <div className="webcam-wrapper">
                             {imgSrc ? (
                                 <img src={imgSrc} alt="Captured" />
                             ) : (
-                                <Webcam
-                                    audio={false}
-                                    ref={webcamRef}
-                                    screenshotFormat="image/jpeg"
-                                />
+                                uploadMode ? (
+                                    <div className="flex items-center justify-center h-48 bg-gray-900">
+                                        <label className="cursor-pointer text-center p-4">
+                                            <Camera className="mx-auto mb-2 text-gray-500" size={32} />
+                                            <span className="text-sm text-gray-400">Click to Upload Face Image</span>
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleFaceFileUpload} />
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <Webcam
+                                        audio={false}
+                                        ref={webcamRef}
+                                        screenshotFormat="image/jpeg"
+                                    />
+                                )
                             )}
                         </div>
-                        <button
-                            type="button"
-                            onClick={imgSrc ? () => setImgSrc(null) : capture}
-                            className="btn-secondary"
-                        >
-                            <Camera size={18} />
-                            {imgSrc ? "Retake Photo" : "Capture Photo"}
-                        </button>
+
+                        {!uploadMode && (
+                            <button
+                                type="button"
+                                onClick={imgSrc ? () => setImgSrc(null) : capture}
+                                className="btn-secondary"
+                            >
+                                <Camera size={18} />
+                                {imgSrc ? "Retake Photo" : "Capture Photo"}
+                            </button>
+                        )}
+
+                        {uploadMode && imgSrc && (
+                            <button
+                                type="button"
+                                onClick={() => setImgSrc(null)}
+                                className="btn-secondary"
+                            >
+                                <Camera size={18} />
+                                Choose Different File
+                            </button>
+                        )}
                     </div>
 
                     <div className="form-group">

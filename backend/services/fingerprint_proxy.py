@@ -3,8 +3,13 @@ import numpy as np
 
 class FingerprintProxy:
     def __init__(self):
-        # ORB is a good free alternative to SIFT/SURF
-        self.orb = cv2.ORB_create(nfeatures=40) # Limit features to keep Vault size manageable
+        # ORB Configuration: More sensitive for synthetic/simple images
+        self.orb = cv2.ORB_create(
+            nfeatures=100, 
+            edgeThreshold=5, 
+            patchSize=31, 
+            fastThreshold=0
+        ) 
 
     def extract_features(self, image_bytes):
         """
@@ -16,6 +21,11 @@ class FingerprintProxy:
         
         if img is None:
             return None
+
+        # Pre-processing: Enhance Constrast (CLAHE)
+        # This helps detection on low-contrast synthetic images
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        img = clahe.apply(img)
 
         # Detect keypoints
         kp = self.orb.detect(img, None)
