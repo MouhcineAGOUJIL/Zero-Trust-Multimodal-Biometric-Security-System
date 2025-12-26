@@ -1,42 +1,56 @@
 import cv2
 import numpy as np
+import sys
+import os
+
+# Ensure backend modules are importable
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+from backend.fingerprint_core import fp_core
 
 class FingerprintProxy:
     def __init__(self):
-        # ORB Configuration: More sensitive for synthetic/simple images
-        self.orb = cv2.ORB_create(
-            nfeatures=100, 
-            edgeThreshold=5, 
-            patchSize=31, 
-            fastThreshold=0
-        ) 
+        self.core = fp_core
 
     def extract_features(self, image_bytes):
         """
-        Extracts keypoints (x, y) from a fingerprint image buffer.
-        Returns a list of integer tuples [(x1, y1), (x2, y2), ...].
+        Extracts minutiae from image buffer using FingerprintCore.
+        Returns list of dicts: {'x': int, 'y': int, 'angle': float, 'type': str}
         """
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-        
-        if img is None:
-            return None
-
-        # Pre-processing: Enhance Constrast (CLAHE)
-        # This helps detection on low-contrast synthetic images
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        img = clahe.apply(img)
-
-        # Detect keypoints
-        kp = self.orb.detect(img, None)
-        
-        # Convert to list of (x, y) coordinates
-        # We discretize/quantize them to integers for the Vault to work reliably
-        points = []
-        for k in kp:
-            x, y = int(k.pt[0]), int(k.pt[1])
-            # Filter duplicates implicitly or explicitly if needed
-            points.append((x, y))
+        try:
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
             
-        # Sort for consistency (though Vault relies on set matching)
-        return sorted(list(set(points)))
+            if img is None:
+                return None
+            
+            # Save temp file for core? (Core takes path)
+            # Refactor Core to take image array?
+            # Yes, check FingerprintCore.extract_minutiae.
+            # It currently does cv2.imread(path).
+            # I should overload it or modify Core to take numpy array.
+            
+            # Quick fix: Save to temp (inefficient but safe for now)
+            # Or better: modify Core.
+            
+            # Since I can't modify Core in this prompt (I already did), 
+            # I will modify Core to accept image array in next step or now?
+            # I will assume I can modify/overload Core logic here or save temp.
+            
+            # Let's save temp for robustness strictly within this proxy to avoid changing too many files at once.
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                cv2.imwrite(tmp.name, img)
+                tmp_path = tmp.name
+                
+            minutiae, _ = self.core.extract_minutiae(tmp_path)
+            os.unlink(tmp_path)
+            
+            return minutiae
+            
+        except Exception as e:
+            print(f"Feature Extraction Error: {e}")
+            return []
+
+    def match(self, min1, min2):
+        """Proxy to core matching"""
+        return self.core.match_fingerprints(min1, min2)

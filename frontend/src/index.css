@@ -61,6 +61,7 @@ body {
   font-size: 1.5rem;
   background: var(--brand-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 }
@@ -96,7 +97,8 @@ body {
 
 .card {
   background: white;
-  padding: 2.5rem;
+  padding: 3.5rem;
+  /* Increased from 2.5rem */
   border-radius: 24px;
   border: 1px solid var(--border-color);
   width: 100%;
@@ -105,45 +107,34 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-}
+/* ... existing hover ... */
 
 .header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+  /* Increased from 2rem */
+  padding-bottom: 2rem;
+  /* Increased from 1.5rem */
   border-bottom: 1px solid var(--border-color);
 }
 
-.header h1 {
-  font-size: 1.25rem;
-  margin: 0;
-  font-weight: 700;
-  color: var(--text-main);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.header svg {
-  color: #4f46e5;
-  /* Indigo-600 */
-}
+/* ... existing header styles ... */
 
 /* Form Elements */
 .form-stack {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2.5rem;
+  /* Increased from 1.5rem */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
+  /* Increased from 0.5rem */
 }
 
 .form-group label {

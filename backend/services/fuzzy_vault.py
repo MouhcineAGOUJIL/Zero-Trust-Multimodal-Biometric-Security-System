@@ -50,8 +50,17 @@ class FuzzyVault:
 
     def lock(self, secret_int, features):
         """
-        Locks secret using robust 2D placement.
+        Locks secret using robust 2D placement with Alignment Helper Data.
+        Features: List of dicts {'x':, 'y':, 'angle':...} or tuples.
         """
+        # Handle dict input
+        if features and isinstance(features[0], dict):
+            minutiae_xy = [(m['x'], m['y']) for m in features]
+            helper_data = features[:] # Store full minutiae for alignment
+        else:
+            minutiae_xy = features
+            helper_data = [] # No alignment possible if features are raw
+            
         # 1. Construct Polynomial with CRC
         poly, stored_crc = self._encode_secret(secret_int)
         
@@ -59,45 +68,28 @@ class FuzzyVault:
         occupied_u = set()
         
         # 2. Project Real Points (Genuine)
-        for (x, y) in features:
-            # Secure 2D Projection: u = x || y
-            # u = x * 1000 + y
+        for (x, y) in minutiae_xy:
             u = int(x) * 1000 + int(y)
-            
-            # Check for exact collision
             if u in occupied_u: continue
             
-            # Evaluate Poly
-            v = int(poly(u))
-            
+            v = int(poly(u / 1000000.0))
             vault.append((u, v))
             occupied_u.add(u)
 
-        # 3. Add Chaff Points (Robust Generation)
+        # 3. Add Chaff Points
         attempts = 0
-        
-        # Estimate bounds (generic image size 600x600)
-        max_x = 600
-        max_y = 600
-        
-        # Determine V range
+        max_x, max_y = 600, 600
         ys = [p[1] for p in vault]
         min_v, max_v = (min(ys), max(ys)) if ys else (0, 100000)
         v_range = max_v - min_v
         
-        # Decode genuine X,Y for distance checking
-        genuine_xy = []
-        for u in occupied_u:
-            genuine_xy.append((u // 1000, u % 1000))
+        genuine_xy = [(u // 1000, u % 1000) for u in occupied_u]
 
         while len(vault) < self.vault_size and attempts < self.vault_size * 50:
             attempts += 1
-            
-            # Generate random 2D point (x, y)
             rx = random.randint(0, max_x)
             ry = random.randint(0, max_y)
             
-            # Distance check in 2D
             is_close = False
             for (gx, gy) in genuine_xy:
                 if abs(rx - gx) < 15 and abs(ry - gy) < 15:
@@ -105,34 +97,78 @@ class FuzzyVault:
             
             if not is_close:
                 ru = rx * 1000 + ry
-                # Random V (Chaff)
                 rv = random.randint(min_v - int(v_range*0.2), max_v + int(v_range*0.2))
-                
                 vault.append((ru, rv))
-                # Add to local exclusion list
                 genuine_xy.append((rx, ry))
         
         random.shuffle(vault)
-        return vault
+        return {
+            'vault': vault, 
+            'helper_data': helper_data,
+            'degree': self.degree
+        }
 
-    def unlock(self, vault, candidate_features):
+    def unlock(self, vault_package, candidate_features):
         """
-        Unlocks using 2D Spatial Matching.
+        Unlocks using Alignment Helper Data + 2D Match.
         """
-        # 1. Parse Candidate Points
-        candidates_xy = [(int(x), int(y)) for (x, y) in candidate_features]
-             
-        # 2. Find Matches (Spatial Tolerance)
+        # Unpack
+        vault = vault_package['vault'] if 'vault' in vault_package else vault_package
+        helper_data = vault_package.get('helper_data', [])
+        
+        # 0. Alignment Step
+        # If we have helper data and candidates are dicts (minutiae), align!
+        # Need FingerprintCore for match
+        from backend.fingerprint_core import fp_core
+        
+        candidates_xy = []
+        
+        if helper_data and candidate_features and isinstance(candidate_features[0], dict):
+            # Align Candidate -> Helper
+            score, transform = fp_core.match_fingerprints(helper_data, candidate_features)
+            print(f"[FuzzyVault] Alignment Score: {score:.3f}")
+            
+            if score > 0.1 and transform:
+                rot_deg, c1, c2 = transform
+                # Apply transform to candidates
+                # m_aligned = R * (m - c2) + c1 
+                # (Rotate Query(c2) to match Template(c1))
+                # Note on match_fingerprints: it searched rotation of M2 (Query) to match M1 (Template)
+                # So we apply best_transform to M2.
+                
+                rot_rad = np.deg2rad(rot_deg)
+                cos_t, sin_t = np.cos(rot_rad), np.sin(rot_rad)
+                
+                for m in candidate_features:
+                    # Centered
+                    tx = m['x'] - c2[0]
+                    ty = m['y'] - c2[1]
+                    
+                    # Rotated
+                    rx = tx * cos_t - ty * sin_t
+                    ry = tx * sin_t + ty * cos_t
+                    
+                    # Shifted to M1
+                    fx = rx + c1[0]
+                    fy = ry + c1[1]
+                    
+                    candidates_xy.append((int(fx), int(fy)))
+            else:
+                 print("[FuzzyVault] Alignment Failed or Score too low.")
+                 candidates_xy = [(int(m['x']), int(m['y'])) for m in candidate_features]
+        else:
+             # Fallback
+             candidates_xy = [(int(x), int(y)) for (x, y) in candidate_features] if not isinstance(candidate_features[0], dict) else [(m['x'], m['y']) for m in candidate_features]
+
+        # 2. Vault Unlock (Standard Logic)
         matches = []
-        TOLERANCE = 10 
+        TOLERANCE = 15 
         TOLERANCE_SQ = TOLERANCE ** 2
         
         for (vu, vv) in vault:
-            # Unpack Vault Point
             vx = vu // 1000
             vy = vu % 1000
             
-            # Find closest candidate
             best_dist_sq = float('inf')
             
             for (cx, cy) in candidates_xy:
@@ -146,65 +182,63 @@ class FuzzyVault:
             if best_dist_sq <= TOLERANCE_SQ:
                 matches.append((vu, vv))
         
-        # Deduplicate
         matches = list(set(matches))
+        print(f"[FuzzyVault] Unlocking... Vault Size: {len(vault)}, Candidates: {len(candidates_xy)}")
+        if vault:
+            vx, vy = vault[0][0] // 1000, vault[0][0] % 1000
+            print(f"[Debug] Vault[0] (Genuine): ({vx}, {vy})")
+        if candidates_xy:
+             print(f"[Debug] Candidate[0] (Aligned): {candidates_xy[0]}")
+             
+        print(f"[FuzzyVault] Matches Found: {len(matches)} (Required: {self.degree + 2})")
         
-        # print(f"[FuzzyVault] Matches: {len(matches)} (Required: {self.degree+2})")
-
-        # Check Sufficiency
         if len(matches) < self.degree + 2:
             return None, 0.0
             
-        # 3. RANSAC with CRC Check
-        iterations = 2000
-        best_secret = None
-        
+        # 3. RANSAC
+        iterations = 1000 # Reduced for speed
         for _ in range(iterations):
             try:
-                # Sample
                 sample = random.sample(matches, self.degree + 1)
-                
-                # Check for duplicate Inputs in sample
-                sus = [p[0] for p in sample]
-                if len(set(sus)) < len(sus): 
-                     continue 
-                
+                sus = [p[0] / 1000000.0 for p in sample]
+                if len(set(sus)) < len(sus): continue
                 sv = [p[1] for p in sample]
                 
-                # Interpolate P(u)
                 with warnings.catch_warnings():
                     warnings.simplefilter('ignore', np.RankWarning)
                     z = np.polyfit(sus, sv, self.degree)
                     rec_poly = np.poly1d(z)
                 
-                # Check Inliers
                 inliers_count = 0
                 for (mu, mv) in matches:
-                    if abs(rec_poly(mu) - mv) < 500: 
+                    if abs(rec_poly(mu / 1000000.0) - mv) < 2000: 
                         inliers_count += 1
                 
-                # Pruning
-                if inliers_count < self.degree + 3:
-                     continue
+                if inliers_count < self.degree + 3: 
+                    # print(f"  [RANSAC] Low Inliers: {inliers_count}")
+                    continue
                 
-                # DECODE and CRC
                 rec_secret = int(round(rec_poly.coeffs[-1]))
                 rec_crc = int(round(rec_poly.coeffs[-2]))
                 
-                # Verify CRC
                 try:
                      if rec_secret < 0: rec_secret = abs(rec_secret)
                      data = struct.pack('<I', rec_secret)
-                except:
+                except: 
                      continue
                     
-                calc_crc = self._compute_crc(data)
+                calc_crc = self._compute_crc(data) 
                 
                 if calc_crc == rec_crc:
-                    print(f"[FuzzyVault] CRC MATCH! Secret: {rec_secret} Inliers: {inliers_count}")
+                    print(f"[FuzzyVault] SUCCESS! Secret: {rec_secret} (Inliers: {inliers_count})")
                     return rec_secret, 1.0 
-                    
-            except Exception:
+                else:
+                    if _ % 100 == 0:
+                        print(f"  [RANSAC] CRC Mismatch. Rec: {rec_secret}, CRC: {rec_crc} vs {calc_crc}. (Inliers: {inliers_count})")
+                        
+            except Exception as e: 
+                # print(f"RANSAC Error: {e}")
                 pass
-             
+        
+        print("[FuzzyVault] RANSAC Failed to find valid secret.")
         return None, 0.0

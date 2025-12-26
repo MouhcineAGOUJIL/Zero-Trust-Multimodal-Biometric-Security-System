@@ -69,7 +69,7 @@ class BiometricService:
         """Generates a secure random integer token."""
         return secrets.randbits(32)
 
-    def generate_biohash(self, feature_vector, token_seed, hash_length=128):
+    def generate_biohash(self, feature_vector, token_seed, hash_length=1024):
         """Projects features onto random basis defined by token_seed."""
         np.random.seed(token_seed)
         feature_len = len(feature_vector)
@@ -85,7 +85,7 @@ class BiometricService:
         # Return as string '10101...' for storage
         return "".join(map(str, biohash))
 
-    def match_biohashes(self, hash_str1, hash_str2, threshold=0.15):
+    def match_biohashes(self, hash_str1, hash_str2, threshold=0.07):
         """Calculates Hamming Distance between two hash strings."""
         if len(hash_str1) != len(hash_str2):
             return False, 1.0

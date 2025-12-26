@@ -2,12 +2,15 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/auth';
 
-export const enrollUser = async (username, faceImage, fingerFile) => {
+export const enrollUser = async (username, faceImage, fingerFile, palmFile) => {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('file', faceImage);
     if (fingerFile) {
         formData.append('file_finger', fingerFile);
+    }
+    if (palmFile) {
+        formData.append('file_palm', palmFile);
     }
 
     try {

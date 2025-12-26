@@ -8,3 +8,4 @@ uvicorn
 python-multipart
 sqlalchemy
 requests
+tensorflow-cpu

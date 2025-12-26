@@ -32,6 +32,9 @@ class BiometricTemplate(Base):
     # Fingerprint Fuzzy Vault (Stored as JSON string)
     fingerprint_vault = Column(String, nullable=True)
 
+    # Palm Vault (Stored as JSON string)
+    palm_vault = Column(String, nullable=True)
+
     owner = relationship("User", back_populates="biometrics")
 
 class AccessLog(Base):
