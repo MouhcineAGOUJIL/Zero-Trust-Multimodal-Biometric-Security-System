@@ -6,20 +6,19 @@ import { Camera, Fingerprint, UserPlus, CheckCircle, AlertTriangle, Hand } from 
 const Enroll = () => {
     const webcamRef = useRef(null);
     const [username, setUsername] = useState('');
-    const [imgSrc, setImgSrc] = useState(null);
-    const [fingerFile, setFingerFile] = useState(null);
+    const [imgSrc, setImgSrc] = useState(null); // Iris Image
     const [palmFile, setPalmFile] = useState(null);
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const [uploadMode, setUploadMode] = useState(false); // Toggle between Camera and Upload
+    const [uploadMode, setUploadMode] = useState(false);
 
     const capture = useCallback(() => {
         const imageSrc = webcamRef.current.getScreenshot();
         setImgSrc(imageSrc);
     }, [webcamRef]);
 
-    const handleFaceFileUpload = (e) => {
+    const handleIrisFileUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -47,9 +46,11 @@ const Enroll = () => {
         setStatus(null);
 
         try {
-            const faceBlob = dataURLtoBlob(imgSrc);
-            const faceFile = new File([faceBlob], "face.jpg", { type: "image/jpeg" });
-            const res = await enrollUser(username, faceFile, fingerFile, palmFile);
+            const irisBlob = dataURLtoBlob(imgSrc);
+            const irisFile = new File([irisBlob], "iris.jpg", { type: "image/jpeg" });
+
+            // Call API with (username, palmFile, irisFile)
+            const res = await enrollUser(username, palmFile, irisFile);
             setStatus({ type: 'success', message: res.message });
         } catch (err) {
             setStatus({ type: 'error', message: err.detail || "Enrollment failed" });
@@ -63,8 +64,8 @@ const Enroll = () => {
             <div className="card" style={{ maxWidth: '600px' }}>
                 <div className="header" style={{ marginBottom: '2rem' }}>
                     <UserPlus className="icon-cyan" size={32} />
-                    <h1 style={{ marginBottom: '0.5rem' }}>SECURE ENROLLMENT</h1>
-                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Multimodal Registration</p>
+                    <h1 style={{ marginBottom: '0.5rem' }}>BIOMETRIC ENROLLMENT</h1>
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Hand & Iris Registration</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="form-stack" style={{ gap: '2rem' }}>
@@ -81,7 +82,7 @@ const Enroll = () => {
 
                     <div className="form-group">
                         <div className="flex justify-between items-center mb-2" style={{ marginBottom: '0.5rem' }}>
-                            <label>Face Capture (Required)</label>
+                            <label>Iris Capture (Required)</label>
                             <button
                                 type="button"
                                 onClick={() => { setUploadMode(!uploadMode); setImgSrc(null); }}
@@ -100,8 +101,8 @@ const Enroll = () => {
                                     <div className="flex items-center justify-center h-48 bg-gray-900" style={{ height: '240px', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <label className="cursor-pointer text-center p-4">
                                             <Camera className="mx-auto mb-2 text-gray-500" size={32} style={{ margin: '0 auto 0.5rem', color: '#64748b' }} />
-                                            <span className="text-sm text-gray-400" style={{ color: '#94a3b8' }}>Click to Upload Face Image</span>
-                                            <input type="file" accept="image/*" className="hidden" style={{ display: 'none' }} onChange={handleFaceFileUpload} />
+                                            <span className="text-sm text-gray-400" style={{ color: '#94a3b8' }}>Click to Upload Iris Image</span>
+                                            <input type="file" accept="image/*" className="hidden" style={{ display: 'none' }} onChange={handleIrisFileUpload} />
                                         </label>
                                     </div>
                                 ) : (
@@ -140,24 +141,13 @@ const Enroll = () => {
                         )}
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                        <div className="form-group">
-                            <label style={{ fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>Fingerprint (Opt)</label>
-                            <label className={`file-upload ${fingerFile ? 'active' : ''}`} style={{ padding: '0.8rem', border: '2px dashed #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', background: fingerFile ? '#f0f9ff' : 'white', borderColor: fingerFile ? '#0ea5e9' : '#e2e8f0' }}>
-                                <Fingerprint size={20} className="icon-purple" color="#8b5cf6" />
-                                <span style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{fingerFile ? "Selected" : "Upload"}</span>
-                                <input type="file" style={{ display: 'none' }} onChange={(e) => setFingerFile(e.target.files[0])} />
-                            </label>
-                        </div>
-
-                        <div className="form-group">
-                            <label style={{ fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>Palm (Opt)</label>
-                            <label className={`file-upload ${palmFile ? 'active' : ''}`} style={{ padding: '0.8rem', border: '2px dashed #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', background: palmFile ? '#fdf2f8' : 'white', borderColor: palmFile ? '#ec4899' : '#e2e8f0' }}>
-                                <Hand size={20} className="icon-pink" color="#ec4899" />
-                                <span style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>{palmFile ? "Selected" : "Upload"}</span>
-                                <input type="file" style={{ display: 'none' }} onChange={(e) => setPalmFile(e.target.files[0])} />
-                            </label>
-                        </div>
+                    <div className="form-group">
+                        <label style={{ fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>Hand / Palm (Optional)</label>
+                        <label className={`file-upload ${palmFile ? 'active' : ''}`} style={{ padding: '0.8rem', border: '2px dashed #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', background: palmFile ? '#fdf2f8' : 'white', borderColor: palmFile ? '#ec4899' : '#e2e8f0' }}>
+                            <Hand size={20} className="icon-pink" color="#ec4899" />
+                            <span style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{palmFile ? "Selected: " + palmFile.name : "Upload Palm Image"}</span>
+                            <input type="file" style={{ display: 'none' }} onChange={(e) => setPalmFile(e.target.files[0])} />
+                        </label>
                     </div>
 
                     <button

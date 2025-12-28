@@ -2,11 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Enroll from './pages/Enroll';
-import VerifyFace from './pages/VerifyFace';
-import VerifyFinger from './pages/VerifyFinger';
-import VerifyMultimodal from './pages/VerifyMultimodal';
 import VerifyPalm from './pages/VerifyPalm';
+import VerifyIris from './pages/VerifyIris';
+import VerifyMultimodal from './pages/VerifyMultimodal';
 import VerifyZeroTrust from './pages/VerifyZeroTrust';
+import AttackSimulation from './pages/AttackSimulation';
 import { Shield } from 'lucide-react';
 
 function App() {
@@ -29,11 +29,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/enroll" element={<Enroll />} />
-          <Route path="/verify/face" element={<VerifyFace />} />
-          <Route path="/verify/finger" element={<VerifyFinger />} />
           <Route path="/verify/palm" element={<VerifyPalm />} />
+          <Route path="/verify/iris" element={<VerifyIris />} />
           <Route path="/verify/multimodal" element={<VerifyMultimodal />} />
           <Route path="/verify/zerotrust" element={<VerifyZeroTrust />} />
+          <Route path="/attack-simulation" element={<AttackSimulation />} />
         </Routes>
       </div>
     </Router>

@@ -19,6 +19,12 @@ class PalmService:
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img is None:
             return None
+        
+        # Resize if too large (speed up AKAZE)
+        h, w = img.shape[:2]
+        if w > 800:
+            scale = 800 / w
+            img = cv2.resize(img, (int(w*scale), int(h*scale)))
             
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         

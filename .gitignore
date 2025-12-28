@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*_backup*.ipynb
+*_backup_*.ipynb
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+
+# Large Model Files
+*.dat
+*.keras
+*.h5
+*.pkl
+*.pth
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary Files
+debug_*.py
+debug_*.png
+test_*.py
+*_temp.py
+*_old.py
+
+# Scripts for notebook manipulation (temporary)
+add_*.py
+fix_*.py
+update_*.py
+populate_*.py
+simplify_*.py
+reorder_*.py
+verify_*.py
+final_fix.py
+rename_datasets.py
+notebook_execution.py
+
+# Dataset (too large for git - add to LFS or external storage)
+MULB dataset/
+
+# Generated files
+*.png
+*.jpg
+*.jpeg
+!Screens/*.png
+!Screens/*.jpg
+
+# Backend test files
+backend/test_*.py
+backend/benchmark_*.py
+backend/debug_*.py
+
+# Other temporary
+Gap_Analysis.md
+Description.txt

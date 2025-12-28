@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Fingerprint, Shield, Shuffle, Hand } from 'lucide-react';
+import { Shield, Shuffle, Hand, Eye, ShieldAlert } from 'lucide-react';
 import '../index.css';
 
 const ModuleCard = ({ to, icon: Icon, title, desc, color }) => (
@@ -64,39 +64,39 @@ function Home() {
                 maxWidth: '1400px'
             }}>
                 <ModuleCard
-                    to="/verify/face"
-                    icon={User}
-                    title="Face Verification"
-                    desc="BioHash-based facial recognition."
-                    color="#8b5cf6"
-                />
-                <ModuleCard
-                    to="/verify/finger"
-                    icon={Fingerprint}
-                    title="Fingerprint Auth"
-                    desc="Fuzzy Vault protocol matching."
-                    color="#06b6d4"
-                />
-                <ModuleCard
                     to="/verify/palm"
                     icon={Hand}
-                    title="Palm Verification"
-                    desc="Siamese Network texture analysis."
+                    title="Hand Verification"
+                    desc="Palm texture analysis."
                     color="#ec4899"
+                />
+                <ModuleCard
+                    to="/verify/iris"
+                    icon={Eye}
+                    title="Iris Verification"
+                    desc="Cancelable iris recognition."
+                    color="#8b5cf6"
                 />
                 <ModuleCard
                     to="/verify/multimodal"
                     icon={Shuffle}
                     title="Multimodal Fusion"
-                    desc="Combined security using all three."
+                    desc="Combined security check."
                     color="#4f46e5"
                 />
                 <ModuleCard
                     to="/verify/zerotrust"
                     icon={Shield}
-                    title="Zero Trust"
-                    desc="Full context-aware adaptive auth."
+                    title="Context Auth"
+                    desc="Zero Trust adaptive logic."
                     color="#10b981"
+                />
+                <ModuleCard
+                    to="/attack-simulation"
+                    icon={ShieldAlert}
+                    title="Security Audit"
+                    desc="Run attack simulations."
+                    color="#f59e0b"
                 />
             </div>
 

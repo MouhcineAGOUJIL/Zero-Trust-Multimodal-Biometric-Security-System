@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { ShieldCheck, User, Fingerprint, Hand, CheckCircle, XCircle, Loader, Upload } from 'lucide-react';
+import { ShieldCheck, Eye, Hand, CheckCircle, XCircle, Loader, Upload } from 'lucide-react';
 
 function VerifyMultimodal() {
     const [username, setUsername] = useState('');
@@ -8,23 +8,22 @@ function VerifyMultimodal() {
     const [message, setMessage] = useState('');
 
     // Files
-    const [faceFile, setFaceFile] = useState(null);
-    const [fingerFile, setFingerFile] = useState(null);
+    const [irisFile, setIrisFile] = useState(null);
     const [palmFile, setPalmFile] = useState(null);
 
     const verify = async () => {
         if (!username) { setStatus('error'); setMessage('Please enter username'); return; }
-        if (!faceFile) { setStatus('error'); setMessage('Face is required for Multimodal Auth'); return; }
+        if (!irisFile && !palmFile) { setStatus('error'); setMessage('At least one biometric is required'); return; }
 
         setStatus('loading'); setMessage('Processing Biometrics (Fusion)...');
 
         try {
             const formData = new FormData();
             formData.append('username', username);
-            formData.append('file', faceFile);
-            if (fingerFile) formData.append('file_finger', fingerFile);
+            if (irisFile) formData.append('file_iris', irisFile);
             if (palmFile) formData.append('file_palm', palmFile);
 
+            // Multimodal uses same endpoint but logic is fused
             const res = await axios.post('http://127.0.0.1:8000/auth/verify/multimodal', formData);
 
             if (res.data.authenticated) {
@@ -44,10 +43,10 @@ function VerifyMultimodal() {
         <div className="page-container">
             <div className="card" style={{ maxWidth: '600px' }}>
                 <div className="header">
-                    <ShieldCheck size={32} color="#10b981" />
-                    <h1>Zero Trust Multimodal Auth</h1>
+                    <ShieldCheck size={32} color="#4f46e5" />
+                    <h1>Multimodal Auth</h1>
                     <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                        High-Security Fusion: Face + Fingerprint + Palm
+                        High-Security Fusion: Iris + Hand
                     </p>
                 </div>
 
@@ -62,30 +61,20 @@ function VerifyMultimodal() {
                         />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                        {/* Face Upload */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        {/* Iris Upload */}
                         <div className="form-group">
-                            <label style={{ fontSize: '0.8rem' }}>Face (Required)</label>
-                            <label className={`file-upload mini ${faceFile ? 'active' : ''}`}>
-                                <User size={20} className="icon-purple" />
-                                <span className="filename">{faceFile ? "Selected" : "Upload"}</span>
-                                <input type="file" onChange={e => setFaceFile(e.target.files[0])} accept="image/*" />
-                            </label>
-                        </div>
-
-                        {/* Finger Upload */}
-                        <div className="form-group">
-                            <label style={{ fontSize: '0.8rem' }}>Finger (Optional)</label>
-                            <label className={`file-upload mini ${fingerFile ? 'active' : ''}`}>
-                                <Fingerprint size={20} className="icon-blue" />
-                                <span className="filename">{fingerFile ? "Selected" : "Upload"}</span>
-                                <input type="file" onChange={e => setFingerFile(e.target.files[0])} accept="image/*" />
+                            <label style={{ fontSize: '0.8rem' }}>Iris (Primary)</label>
+                            <label className={`file-upload mini ${irisFile ? 'active' : ''}`}>
+                                <Eye size={20} className="icon-purple" />
+                                <span className="filename">{irisFile ? "Selected" : "Upload"}</span>
+                                <input type="file" onChange={e => setIrisFile(e.target.files[0])} accept="image/*" />
                             </label>
                         </div>
 
                         {/* Palm Upload */}
                         <div className="form-group">
-                            <label style={{ fontSize: '0.8rem' }}>Palm (Optional)</label>
+                            <label style={{ fontSize: '0.8rem' }}>Palm/Hand (Fusion)</label>
                             <label className={`file-upload mini ${palmFile ? 'active' : ''}`}>
                                 <Hand size={20} className="icon-pink" />
                                 <span className="filename">{palmFile ? "Selected" : "Upload"}</span>
@@ -98,7 +87,7 @@ function VerifyMultimodal() {
                         className="btn-primary"
                         onClick={verify}
                         disabled={status === 'loading'}
-                        style={{ marginTop: '1rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+                        style={{ marginTop: '1rem', background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)' }}
                     >
                         {status === 'loading' ? <Loader className="spin" /> : 'Authenticate (Fusion)'}
                     </button>
@@ -123,8 +112,8 @@ function VerifyMultimodal() {
                     padding: 0.5rem;
                 }
                 .file-upload.active {
-                    border-color: #10b981;
-                    background: rgba(16, 185, 129, 0.05);
+                    border-color: #6366f1;
+                    background: rgba(99, 102, 241, 0.05);
                 }
                 .filename {
                     font-size: 0.75rem;

@@ -12,6 +12,8 @@ class User(Base):
     
     # Context Data
     trusted_ip = Column(String, nullable=True) # IP used during enrollment
+    trusted_device_id = Column(String, nullable=True) # Unique Device ID
+    home_region = Column(String, nullable=True) # "US", "EU", "Local", etc.
 
     # Relationship
     biometrics = relationship("BiometricTemplate", back_populates="owner")
